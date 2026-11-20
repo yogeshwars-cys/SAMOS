@@ -8,7 +8,7 @@ directory), the host engine is built from samos_engine.c with the
 platform compiler (gcc on Windows plus -lws2_32, cc elsewhere).
 For Android, cross-compile once with the NDK and pass --binary:
 
-    aarch64-linux-android31-clang -O3 -fPIE -pie -o samos_engine samos_engine.c
+    aarch64-linux-android31-clang -O3 -fPIE -pie -o samos_engine engine/samos_engine.c
 """
 import argparse
 import os
@@ -20,7 +20,9 @@ from pathlib import Path
 
 def _engine_c() -> Path | None:
     for cand in [os.environ.get("SAMOS_ENGINE_C"),
+                 Path(__file__).resolve().parents[2] / "engine" / "samos_engine.c",
                  Path(__file__).with_name("samos_engine.c"),
+                 Path.cwd() / "engine" / "samos_engine.c",
                  Path.cwd() / "samos_engine.c"]:
         if cand and Path(cand).exists():
             return Path(cand)
@@ -29,10 +31,10 @@ def _engine_c() -> Path | None:
 
 def _default_binary() -> Path:
     name = "samos_engine_host.exe" if os.name == "nt" else "samos_engine"
-    for base in [Path(__file__).parent, Path.cwd()]:
+    for base in [Path(__file__).resolve().parents[2], Path(__file__).parent, Path.cwd()]:
         if (base / name).exists():
             return base / name
-    return Path(__file__).parent / name
+    return Path(__file__).resolve().parents[2] / name
 
 
 def build_engine(binary: Path) -> None:

@@ -11,11 +11,12 @@ import time
 
 import numpy as np
 
-import samos_common as sc
-from samos_client import Engine, Router
+from samos import common as sc
+from samos.client import Engine, Router
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-STORE = os.path.join(HERE, "scifact.samos")
+ROOT = os.path.dirname(HERE)
+STORE = os.path.join(ROOT, "scifact.samos")
 
 
 def test_store_format():
@@ -59,7 +60,7 @@ def test_crc_tamper():
 
 def test_engine_parity():
     proc = subprocess.Popen(
-        [os.path.join(HERE, "samos_engine_host.exe"), STORE, "--ram", "--port", "9979"],
+        [os.path.join(ROOT, "samos_engine_host.exe"), STORE, "--ram", "--port", "9979"],
         stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True)
     try:
         time.sleep(1.0)

@@ -24,7 +24,7 @@ import zlib
 
 import numpy as np
 
-import samos_common as sc
+from samos import common as sc
 
 SLOTS_PER_PAGE = 128
 CACHE = r"D:\Downloads\projects\RAGS\bqboost\benchmark_results\embedding_cache\109b241a214ea77f556760d5dafab0ba1bb0eee3fbed44ea09e45a2b896deb28.npz"
@@ -180,7 +180,7 @@ def main():
           f"indistinguishable from a weak hit)")
 
     if args.phone:
-        from samos_client import Engine, Router
+        from samos.client import Engine, Router
         eng = Engine("127.0.0.1", args.port)
         router = Router(args.store + ".router.npz")
         f_walls, s_walls = [], []

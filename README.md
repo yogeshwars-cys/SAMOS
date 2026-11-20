@@ -1,4 +1,4 @@
-![SAMOS logo](logo.png)
+![SAMOS logo](assets/logo.png)
 
 # SAMOS -- Secondary Access Memory Optimizing System
 
@@ -36,12 +36,12 @@ It is an explicit, program-controlled secondary-memory layer.
 
 ### 1. Fabric: secondary RAM for live programs
 
-`samos_fabric.py` is the optimizer library. Programs declare segments in a
+`src/samos/fabric.py` is the optimizer library. Programs declare segments in a
 spec, offload non-hot data to the phone arena, run background work over the
 bus, and complete with digest-verified bring-back:
 
 ```python
-from samos_fabric import Fabric
+from samos.fabric import Fabric
 
 fab = Fabric(port=9977)
 fab.begin_task({"program": "my_app", "segments": [
@@ -75,13 +75,13 @@ Fabric guarantees and fallbacks:
 `build_store.py` creates a `SAMOSDB1` store and refuses duplicate records.
 The store carries fixed-size records, IVF lists, centroids, document IDs,
 per-record CRC32 seals, and a provenance manifest in one file.
-`samos_engine.c` serves it from the secondary device (mmap or RAM-staged +
+`engine/samos_engine.c` serves it from the secondary device (mmap or RAM-staged +
 `mlock`) and also serves direct coordinate FETCH and the writable Fabric
 arena (1 MiB segments).
 
 Canonical search is intentionally simple: route by centroids, then exact
 INT8 dot over the selected lists ordered by `(score DESC, idx ASC)`. The C
-engine must bit-match `samos_common.reference_search`; evaluation reports
+engine must bit-match `samos.common.reference_search`; evaluation reports
 FAIL if it does not.
 
 ## Measured results (2026-11-21)
@@ -130,22 +130,35 @@ The freed ~94 MB ran twice the heavy subtasks plus background indexing at a
 peak 70 MB below HOME. SAM is slower in wall time; its win is footprint and
 capacity.
 
-## Files
+## Repository layout
 
-| File | Role |
-|---|---|
-| [samos_common.py](samos_common.py) | Store format, quantization, canonical reference search |
-| [build_store.py](build_store.py) | Builds distinct-record SAMOS stores + laptop router |
-| [samos_engine.c](samos_engine.c) | Secondary-side engine: search, FETCH, Fabric arena |
-| [samos_client.py](samos_client.py) | Primary-side wire client |
-| [samos_fabric.py](samos_fabric.py) | Optimizer library (declare/offload/consume/bring-back) |
-| [mini_program.py](mini_program.py) | Miniature real program using the Fabric |
-| [fabric_test.py](fabric_test.py) | HOME vs SAM offload test with cable pull |
-| [staged_offload_test.py](staged_offload_test.py) | Staged offload -> concurrent heavy subtasks |
-| [samos_eval.py](samos_eval.py) | Parity + recall evaluation vs brute-force truth |
-| [vpm_test.py](vpm_test.py) | Direct-addressed (VPM) vs search thesis test |
-| [test_samos.py](test_samos.py) | Store format, CRC tamper, host engine parity tests |
-| [ram_scope_test.py](ram_scope_test.py) | 200 MB defined RAM scope: HOME exceeds it, SAM plan stays inside |
+```
+SAMOS/
+|-- README.md, LICENSE, pyproject.toml
+|-- assets/          logo.png
+|-- src/samos/       the installed Python package
+|     __init__.py        package version
+|     common.py          store format, quantization, canonical reference
+|     client.py          primary-side wire client
+|     fabric.py          optimizer library (declare/offload/consume/bring-back)
+|     build_store.py     `samos-build`
+|     evaluation.py      `samos-eval`
+|     engine_launcher.py `samos-engine`
+|     fabric_cli.py      `samos-fabric`
+|-- engine/
+|     samos_engine.c     secondary-side engine (search, FETCH, Fabric arena)
+|-- examples/
+|     mini_program.py    miniature real program using the Fabric
+|-- tests/
+|     test_samos.py            store format, CRC tamper, engine parity
+|     fabric_test.py           HOME vs SAM offload, cable pull
+|     staged_offload_test.py   freed RAM -> concurrent heavy subtasks
+|     ram_scope_test.py        200 MB defined RAM scope
+|     vpm_test.py              direct-addressed (VPM) vs search
+```
+
+Generated stores (`*.samos`), routers, binaries, logs, and paging files
+are build artifacts and are not committed.
 
 ## Install and run
 
@@ -176,32 +189,30 @@ samos-eval --store scifact.samos --port 9977 --limit 100
 Entry points: `samos-engine` (launch the C engine), `samos-fabric`
 (hello/demo against the memory bus), `samos-build` (store builder),
 `samos-eval` (parity + recall evaluation). The Fabric is also a plain
-library: `from samos_fabric import Fabric` (see the Fabric example
-above). Tests and experiment harnesses (`test_samos.py`,
-`fabric_test.py`, `staged_offload_test.py`, `ram_scope_test.py`,
-`vpm_test.py`, `mini_program.py`) are scripts in the repo root, not
-part of the installed package.
+library: `from samos.fabric import Fabric` (see the Fabric example
+above). Tests live in `tests/`, the example program in `examples/`;
+neither is part of the installed package.
 
 ## Build and test
 
 ```powershell
 # Build the real store (paths to the SciFact embedding cache are arguments)
-python build_store.py --source scifact --out scifact.samos --nlist 64
+samos-build --source scifact --out scifact.samos --nlist 64
 
 # Host engine + tests (Windows/MinGW)
-gcc -O2 -o samos_engine_host.exe samos_engine.c -lws2_32
-python test_samos.py
+gcc -O2 -o samos_engine_host.exe engine/samos_engine.c -lws2_32
+python tests/test_samos.py
 
 # Phone engine (Android NDK) + Fabric arena
-aarch64-linux-android31-clang -O3 -fPIE -pie -o samos_engine_arm samos_engine.c
+aarch64-linux-android31-clang -O3 -fPIE -pie -o samos_engine_arm engine/samos_engine.c
 adb push samos_engine_arm /data/local/tmp/samos_engine
 adb push scifact.samos /data/local/tmp/scifact.samos
 adb shell "chmod +x /data/local/tmp/samos_engine"
 adb shell "cd /data/local/tmp && nohup ./samos_engine ./scifact.samos --ram --verify --arena 112 --port 9977 > samos.log 2>&1 < /dev/null &"
 adb forward tcp:9977 tcp:9977
-python fabric_test.py
-python staged_offload_test.py
-python ram_scope_test.py
+python tests/fabric_test.py
+python tests/staged_offload_test.py
+python tests/ram_scope_test.py
 ```
 
 Generated stores (`*.samos`), routers, binaries, logs, and paging files are

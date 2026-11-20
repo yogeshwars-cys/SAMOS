@@ -17,8 +17,8 @@ import time
 
 import numpy as np
 
-from samos_client import Engine
-from samos_fabric import Fabric
+from samos.client import Engine
+from samos.fabric import Fabric
 
 MIB = 1024 * 1024
 

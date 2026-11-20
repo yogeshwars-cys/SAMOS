@@ -39,7 +39,7 @@ import time
 import numpy as np
 import psutil
 
-from samos_client import Engine
+from samos.client import Engine
 
 SEG_BYTES = 1024 * 1024
 MIB = 1024 * 1024
@@ -84,7 +84,7 @@ class Fabric:
         self.host, self.port = host, port
         self.link_wait_s = link_wait_s
         self.force_paging = force_paging
-        self.paging_dir = paging_dir or os.path.join(HERE, "samos_paging")
+        self.paging_dir = paging_dir or os.path.join(os.getcwd(), "samos_paging")
         self.bloat_throttle_s = bloat_throttle_s
         self._eng = None
         self._segments = {}   # name -> {segs:[ids], nbytes, sha, kind}

@@ -26,7 +26,7 @@ from concurrent.futures import ThreadPoolExecutor
 import numpy as np
 import psutil
 
-from samos_fabric import Fabric
+from samos.fabric import Fabric
 
 MIB = 1024 * 1024
 SCOPE_MB = 200

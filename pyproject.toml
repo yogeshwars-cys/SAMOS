@@ -22,18 +22,10 @@ classifiers = [
 Homepage = "https://github.com/yogeshwars-cys/SAMOS"
 
 [project.scripts]
-samos-build = "build_store:main"
-samos-eval = "samos_eval:main"
-samos-engine = "samos_engine_launcher:main"
-samos-fabric = "samos_fabric_cli:main"
+samos-build = "samos.build_store:main"
+samos-eval = "samos.evaluation:main"
+samos-engine = "samos.engine_launcher:main"
+samos-fabric = "samos.fabric_cli:main"
 
-[tool.setuptools]
-py-modules = [
-    "samos_common",
-    "samos_client",
-    "samos_fabric",
-    "build_store",
-    "samos_eval",
-    "samos_engine_launcher",
-    "samos_fabric_cli",
-]
+[tool.setuptools.packages.find]
+where = ["src"]

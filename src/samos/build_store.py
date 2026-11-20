@@ -16,7 +16,7 @@ import time
 
 import numpy as np
 
-import samos_common as sc
+from samos import common as sc
 
 
 def spherical_kmeans(vecs_n, nlist, iters=20, seed=42):

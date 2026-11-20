@@ -20,7 +20,7 @@ import time
 import numpy as np
 import psutil
 
-from samos_fabric import Fabric, HotPin
+from samos.fabric import Fabric, HotPin
 
 MIB = 1024 * 1024
 

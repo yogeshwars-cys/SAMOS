@@ -38,7 +38,7 @@ def run_program(mode, pull_after_offload=False):
     if os.path.exists(status):
         os.remove(status)
     p = subprocess.Popen(
-        [sys.executable, os.path.join(HERE, "mini_program.py"),
+        [sys.executable, os.path.join(os.path.dirname(HERE), "examples", "mini_program.py"),
          "--mode", mode, "--status", status],
         stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
     pulled = False

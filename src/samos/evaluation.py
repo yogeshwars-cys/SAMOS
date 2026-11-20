@@ -17,8 +17,8 @@ import time
 import numpy as np
 import psutil
 
-import samos_common as sc
-from samos_client import Engine, Router
+from samos import common as sc
+from samos.client import Engine, Router
 
 CACHE = r"D:\Downloads\projects\RAGS\bqboost\benchmark_results\embedding_cache\109b241a214ea77f556760d5dafab0ba1bb0eee3fbed44ea09e45a2b896deb28.npz"
 LABELS = r"D:\Downloads\projects\RAGS\bqboost\benchmark_results\embedding_cache\scifact_labels.json"

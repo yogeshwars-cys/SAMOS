@@ -1,7 +1,7 @@
 """SAMOS primary-side client. Holds ONLY the router (centroids).
 
 The primary never loads the store. It normalizes/quantizes the query
-(shared code in samos_common, so encodings cannot drift), routes to
+(shared code in samos.common, so encodings cannot drift), routes to
 nprobe IVF lists, and asks the secondary engine for the canonical
 search over those lists.
 """
@@ -11,7 +11,7 @@ import time
 
 import numpy as np
 
-import samos_common as sc
+from samos import common as sc
 
 MAGIC = 0x4F4D4153
 _REQ = struct.Struct("<IHHIIIf")  # + 48B padding + 384B i8 -> 456 bytes total

@@ -13,7 +13,7 @@
  *           mlock() so the working set stays resident; locked bytes
  *           and faults are reported in every response.
  *
- * Canonical semantics (must match samos_common.reference_search):
+ * Canonical semantics (must match samos.common.reference_search):
  *   exact int8 dot over the selected lists, ordered by
  *   (score DESC, idx ASC). Ties are never arrival-ordered.
  *
