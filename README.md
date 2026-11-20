@@ -1,13 +1,13 @@
 ![SAMOS logo](logo.png)
 
-# SAMOS — Secondary Access Memory Optimizing System
+# SAMOS -- Secondary Access Memory Optimizing System
 
 SAMOS turns a phone, SSD, or USB device into **SAM (Secondary Access Memory)**:
 addressable overflow memory for programs that need to *have* more data than
 they should *hold* in laptop RAM.
 
 A program explicitly declares which of its memory is hot and which is
-secondary. The hot part — the absolute-necessary working set — never leaves
+secondary. The hot part -- the absolute-necessary working set -- never leaves
 the laptop. The secondary part is pushed to SAM under known coordinates and
 brought back when the task completes. Secondary work can consume SAM data in
 the background, more slowly than RAM, while the primary task runs at full
@@ -97,7 +97,7 @@ All numbers are observed, sequential single-client, and transport-bound.
 | Recall@10 (BEIR test qrels) | 73/100 | 73/100 |
 | Top-1 agreement with brute-force f32 | 93/100 | 93/100 |
 | Search wall latency p50 | 0.57 ms | 10.52 ms |
-| Direct record FETCH p50 | — | 4.87 ms |
+| Direct record FETCH p50 | -- | 4.87 ms |
 | Records scanned/query | 731 | 731 |
 
 Phone search compute is 1.43 ms of the 10.52 ms wall; the rest is USB/adb
@@ -114,7 +114,7 @@ pull (forward removed for 3 s mid-run):
 |---|---:|---:|
 | Heavy task | 1.08 s | 1.19 s |
 | Secondary indexing (100 MB) | 0.22 s local | 3.24 s over bus incl. outage |
-| Push 100 MB to phone | — | 3.26 s |
+| Push 100 MB to phone | -- | 3.26 s |
 | Final correctness | baseline | Heavy + indexing digests identical |
 
 ### Staged offload test (freed RAM buys concurrency)
@@ -122,8 +122,8 @@ pull (forward removed for 3 s mid-run):
 | Stage | Observed |
 |---|---|
 | HOME: 4 heavy subtasks, bloat resident | 1.14 s, peak RSS 289 MB |
-| SAM stage 1 offload (60 MB) | RSS 154 → 95 MB |
-| SAM stage 2 offload (40 MB) | RSS 95 → 60 MB |
+| SAM stage 1 offload (60 MB) | RSS 154 -> 95 MB |
+| SAM stage 2 offload (40 MB) | RSS 95 -> 60 MB |
 | SAM: 8 heavy subtasks + indexing | 5.87 s, peak RSS 219 MB |
 
 The freed ~94 MB ran twice the heavy subtasks plus background indexing at a
@@ -141,11 +141,46 @@ capacity.
 | [samos_fabric.py](samos_fabric.py) | Optimizer library (declare/offload/consume/bring-back) |
 | [mini_program.py](mini_program.py) | Miniature real program using the Fabric |
 | [fabric_test.py](fabric_test.py) | HOME vs SAM offload test with cable pull |
-| [staged_offload_test.py](staged_offload_test.py) | Staged offload → concurrent heavy subtasks |
+| [staged_offload_test.py](staged_offload_test.py) | Staged offload -> concurrent heavy subtasks |
 | [samos_eval.py](samos_eval.py) | Parity + recall evaluation vs brute-force truth |
 | [vpm_test.py](vpm_test.py) | Direct-addressed (VPM) vs search thesis test |
 | [test_samos.py](test_samos.py) | Store format, CRC tamper, host engine parity tests |
 | [ram_scope_test.py](ram_scope_test.py) | 200 MB defined RAM scope: HOME exceeds it, SAM plan stays inside |
+
+## Install and run
+
+SAMOS is an installable Python library plus a portable C engine:
+
+```powershell
+git clone https://github.com/yogeshwars-cys/SAMOS.git
+cd SAMOS
+pip install -e .
+
+# 1. Build a store (SciFact defaults point at a local embedding cache;
+#    override with --cache/--labels/--texts)
+samos-build --source scifact --out scifact.samos --nlist 64
+
+# 2. Start the engine on this machine (builds the host binary if needed;
+#    on the phone, cross-compile samos_engine.c with the NDK once and
+#    run the same command line there)
+samos-engine scifact.samos --mode ram --arena 64 --port 9977
+
+# 3. Talk to it: identity, then a full offload/consume/bring-back run
+samos-fabric hello
+samos-fabric demo --mb 16
+
+# 4. Evaluate retrieval parity/recall against a running engine
+samos-eval --store scifact.samos --port 9977 --limit 100
+```
+
+Entry points: `samos-engine` (launch the C engine), `samos-fabric`
+(hello/demo against the memory bus), `samos-build` (store builder),
+`samos-eval` (parity + recall evaluation). The Fabric is also a plain
+library: `from samos_fabric import Fabric` (see the Fabric example
+above). Tests and experiment harnesses (`test_samos.py`,
+`fabric_test.py`, `staged_offload_test.py`, `ram_scope_test.py`,
+`vpm_test.py`, `mini_program.py`) are scripts in the repo root, not
+part of the installed package.
 
 ## Build and test
 
@@ -189,4 +224,4 @@ build artifacts and are not committed.
 
 ## License
 
-MIT � see [LICENSE](LICENSE).
+MIT -- see [LICENSE](LICENSE).

@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "samos"
+version = "0.1.0"
+description = "Secondary Access Memory Optimizing System: explicit secondary memory for programs, using a phone, SSD, or USB device as SAM"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [{ name = "Yogeshwar S" }]
+requires-python = ">=3.10"
+dependencies = ["numpy", "psutil"]
+keywords = ["memory", "offloading", "secondary-memory", "optimizer"]
+classifiers = [
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/yogeshwars-cys/SAMOS"
+
+[project.scripts]
+samos-build = "build_store:main"
+samos-eval = "samos_eval:main"
+samos-engine = "samos_engine_launcher:main"
+samos-fabric = "samos_fabric_cli:main"
+
+[tool.setuptools]
+py-modules = [
+    "samos_common",
+    "samos_client",
+    "samos_fabric",
+    "build_store",
+    "samos_eval",
+    "samos_engine_launcher",
+    "samos_fabric_cli",
+]
