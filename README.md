@@ -63,6 +63,12 @@ Fabric guarantees and fallbacks:
 - **Paging last resort:** if laptop RAM cannot hold a bring-back, the segment
   lands in a memory-mapped paging file and reports that tier.
 - **Hot pinning:** hot arrays are best-effort `VirtualLock`ed on Windows.
+- **Programmer-defined plans:** `run_plan` executes an explicit plan --
+  offload order, which tasks are hot, which are bloated SAM consumers,
+  which parallelize, and their dependencies. A conscious monitor tracks
+  process RSS, system free RAM, on-SAM vs at-home bytes, and link state;
+  while any hot task is active the governor throttles bloated consumers'
+  bus bandwidth, so hot work always finishes first.
 
 ### 2. Store + engine: checksummed off-device corpora
 
@@ -139,8 +145,7 @@ capacity.
 | [samos_eval.py](samos_eval.py) | Parity + recall evaluation vs brute-force truth |
 | [vpm_test.py](vpm_test.py) | Direct-addressed (VPM) vs search thesis test |
 | [test_samos.py](test_samos.py) | Store format, CRC tamper, host engine parity tests |
-| [FACTCHECK.md](FACTCHECK.md) | Audit of the preceding hada phone experiment |
-| [VPM_THESIS.md](VPM_THESIS.md) | Thesis test: translation vs search |
+| [ram_scope_test.py](ram_scope_test.py) | 200 MB defined RAM scope: HOME exceeds it, SAM plan stays inside |
 
 ## Build and test
 
@@ -161,6 +166,7 @@ adb shell "cd /data/local/tmp && nohup ./samos_engine ./scifact.samos --ram --ve
 adb forward tcp:9977 tcp:9977
 python fabric_test.py
 python staged_offload_test.py
+python ram_scope_test.py
 ```
 
 Generated stores (`*.samos`), routers, binaries, logs, and paging files are
@@ -180,3 +186,7 @@ build artifacts and are not committed.
   and coordinate model with the laptop doing the scan, but that deployment
   mode is designed, not yet benchmarked.
 
+
+## License
+
+MIT — see [LICENSE](LICENSE).
